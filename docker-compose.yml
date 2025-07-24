@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+
+  # ---------------- DATABASES ----------------
+
+  mysql-user:
+    image: mysql:8.0
+    container_name: mysql-user
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: productdb
+    ports:
+      - "3307:3306"
+    networks:
+      - smartcart-network
+
+  mysql-inventory:
+    image: mysql:8.0
+    container_name: mysql-inventory
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: inventorydb
+    ports:
+      - "3308:3306"
+    networks:
+      - smartcart-network
+
+  mysql-order:
+    image: mysql:8.0
+    container_name: mysql-order
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: orderdb
+    ports:
+      - "3309:3306"
+    networks:
+      - smartcart-network
+
+#  mysql-payment:
+#    image: mysql:8.0
+#    container_name: mysql-payment
+#    environment:
+#      MYSQL_ROOT_PASSWORD: root
+#      MYSQL_DATABASE: paymentdb
+#    ports:
+#      - "3310:3306"
+#    networks:
+#      - smartcart-network
+
+  # ---------------- EUREKA ----------------
+
+  eureka-server:
+    build: ./smartcart-service-registry
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - smartcart-network
+
+  # ---------------- SERVICES ----------------
+
+#  user-service:
+#    build: ./smartcart-user-service
+#    container_name: user-service
+#    ports:
+#      - "8081:8081"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-user:3306/userdb
+#    depends_on:
+#      - mysql-user
+#      - eureka-server
+#    networks:
+#      - smartcart-network
+
+  inventory-service:
+    build: ./inventory-service
+    container_name: inventory-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-inventory:3306/inventorydb
+    depends_on:
+      - mysql-inventory
+      - eureka-server
+    networks:
+      - smartcart-network
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-order:3306/orderdb
+    depends_on:
+      - mysql-order
+      - eureka-server
+    networks:
+      - smartcart-network
+
+#  payment-service:
+#    build: ./payment-service
+#    container_name: payment-service
+#    ports:
+#      - "8084:8084"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-payment:3306/paymentdb
+#    depends_on:
+#      - mysql-payment
+#      - eureka-server
+#    networks:
+#      - smartcart-network
+
+#  notification-service:
+#    build: ./notification-service
+#    container_name: notification-service
+#    ports:
+#      - "8086:8086"
+#    depends_on:
+#      - eureka-server
+#    networks:
+#      - smartcart-network
+
+  product-service:
+    build: ./product-service
+    container_name: product-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka-server
+    networks:
+      - smartcart-network
+
+  # ---------------- API GATEWAY ----------------
+
+  smartcart-api-gateway:
+    build: ./smartcart-api-gateway
+    container_name: smartcart-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    networks:
+      - smartcart-network
+
+# ---------------- NETWORK ----------------
+
+networks:
+  smartcart-network:
+    driver: bridge
