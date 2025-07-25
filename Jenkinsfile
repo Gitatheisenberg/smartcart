@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.8.8'  // Must match what you installed in Jenkins
+        maven 'Maven 3.9.11'  // Must match what you installed in Jenkins
         jdk 'JDK 11'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Gitatheisenberg/smartcart-git.git', branch: 'main'
+                git url: 'https://github.com/Gitatheisenberg/smartcart.git', branch: 'main'
             }
         }
 
